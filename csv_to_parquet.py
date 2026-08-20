@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import datetime
 csvs_folder = Path("../USGSdata")
-output_parquet_folder = Path("../DB/usgs_parquet")
-output_report = Path("../")
+output_parquet_folder = Path("C:/Users/arlex/OneDrive - Virginia Tech/Projects/FlashFloodPrediction/DB/usgs_parquet")
+output_report = Path("C:/Users/arlex/OneDrive - Virginia Tech/Projects/FlashFloodPrediction/DB/")
 unit_conv_factor = (0.3048)**3
 
 report = {}
@@ -21,11 +21,12 @@ for i, filepath in enumerate(files_list):
     df = pd.read_csv(filepath, index_col="time", usecols=["time", "value"], parse_dates=True)
     df = df.loc[~df.index.duplicated()]
     df = df.resample("h").asfreq() * unit_conv_factor
+    df.rename(columns = {"value":"Qcms"}, inplace=True)
     df.to_parquet(output_parquet_folder / f"{filepath.name.removesuffix(".csv")}.parquet",
                    compression="zstd", 
                    compression_level=1
                    )
-    tot_nan = df.isna().sum().value
+    tot_nan = df.isna().sum().values
     report[station_code]={
         "start_date":   df.index[0],
         "end_date":     df.index[-1],

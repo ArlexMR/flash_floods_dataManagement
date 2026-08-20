@@ -3,8 +3,8 @@ from pathlib import Path
 import shutil 
 import os
 
-aorc_path = Path("../data/AORC_data")
-aorc_output_parquet = Path("../data/AORC_parquet")
+aorc_path = Path("../AORC_data")
+aorc_output_parquet = Path("C:/Users/arlex/OneDrive - Virginia Tech/Projects/FlashFloodPrediction/DB/AORC_parquet")
 aorc_files = list(aorc_path.iterdir())
 variables = set([file.name[:-9] for file in aorc_files])
 
@@ -24,7 +24,7 @@ for variable in list(variables):
         print(f"\tyear {year}")
         filename = f"{variable}_{year}.csv"
         df = pd.read_csv(aorc_path / filename, dtype = {"region": str}, index_col="region").T
-        df.index = pd.to_datetime(df.index)
+        df.index = pd.to_datetime(df.index, utc = True)
         df = df[~df.index.duplicated()]
         df = df.resample("h").asfreq()
         df_list.append(df)
@@ -50,9 +50,10 @@ for site_code in site_codes:
                        compression_level=1
                        )
 print("---------------Removing temporary files------------------")
-
-shutil.rmtree(aorc_output_parquet/"temp")
-
+try:
+    shutil.rmtree(aorc_output_parquet/"temp")
+except(PermissionError) as e:
+    print(f"Failed to delete temporary files at {aorc_output_parquet/"temp"}. Please delete manually. Error details: {e}")
 print("---------------Completed------------------")
 
 print(f"results saved to: {aorc_output_parquet}")
